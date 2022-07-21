@@ -1,0 +1,5 @@
+ntlk
+numpy
+sklearn
+transformers
+matplotlib
