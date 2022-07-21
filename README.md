@@ -1,5 +1,5 @@
 # Feature Space Tools
-For now, a feature space explorer written in Python using `transformers` and `matplotlib`. Allows you to browse embeddings in a 3D plot. You can zoom in and out, dump values to a `pandas`-compatible format, &c.
+For now, a feature space explorer written in Python using `transformers` and `matplotlib`. Allows you to browse embeddings in a 3D scatterplot. You can zoom in and out, dump values to a `pandas`-compatible format, &c.
 
 ## Usage
 1. Edit `src/main.py` to pick preferred Transformer model (e.g., `gpt2`, `bert-base-uncased`) and `device` (e.g., `cpu`)
@@ -7,7 +7,7 @@ For now, a feature space explorer written in Python using `transformers` and `ma
 3. Explore!
 
 ## Notes
-The program will cache sentence embeddings in JSON files. Each sentence has four keys, one for the sentence and three for the `x`, `y`, `z` coordinates for the sentence’s respective vector. This allows for easy checking with `pandas.read_json(…)` The program will repack the latter three columns when displaying vectors.
+The program will cache sentence embeddings in JSON files. Each sentence has four keys, one for the sentence and three for the `x`, `y`, `z` coordinates for the embedding. This allows for easy checking with `pandas.read_json(…)`. The program will repack the latter three columns when displaying vectors.
 
 ## Example
 ![example](https://git.sr.ht/~srhm/feature-space-tools/blob/master/example.png)
