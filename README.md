@@ -1,5 +1,5 @@
 # Feature Space Tools
-For now, a feature space explorer written in Python using `transformers` and `matplotlib`.
+For now, a feature space explorer written in Python using `transformers` and `matplotlib`. Allows you to browse embeddings in a 3D plot. You can zoom in and out, dump values to a `pandas`-compatible format, &c.
 
 ## Usage
 1. Edit `src/main.py` to pick preferred Transformer model (e.g., `gpt2`, `bert-base-uncased`) and `device` (e.g., `cpu`)
