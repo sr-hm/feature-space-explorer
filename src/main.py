@@ -10,9 +10,14 @@ from sklearn.decomposition import PCA
 
 pca = PCA(3)
 p = pipeline("feature-extraction", "gpt2", device=0, truncation=True) # edit model and device
-strip = nltk.data.load('tokenizers/punkt/english.pickle')
 colors = cycle('bgrcmk')
 filenames = []
+
+try:
+    strip = nltk.data.load('tokenizers/punkt/english.pickle')
+except:
+    nltk.download('punkt')
+    strip = nltk.data.load('tokenizers/punkt/english.pickle')
 
 
 def get_vec(s):
