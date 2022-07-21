@@ -36,8 +36,8 @@ def load_works():
     works = []
     for i in sys.argv[1:]:
         filenames.append(i)
-        if f"{i}.json" in os.listdir("cache"):
-            works.append(json.load(open(f"cache/{i}.json", "r")))
+        if f"{i}.json" in os.listdir("."):
+            works.append(json.load(open(f"{i}.json", "r")))
         else:
             with open(f"{i}", "r") as f:
                 s = strip.tokenize(" ".join(f.readlines()))
@@ -45,7 +45,7 @@ def load_works():
                 b = {y: {"s": x, "v": get_vec(x)} for y, x in enumerate(s)}
                 b = reduce_dims(b)
                 works.append(b)
-                json.dump(b, open(f"cache/{i}.json", "w"))
+                json.dump(b, open(f"{i}.json", "w"))
     return works
 
 
