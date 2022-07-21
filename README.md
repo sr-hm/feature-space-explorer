@@ -7,7 +7,7 @@ For now, a feature space explorer written in Python using `transformers` and `ma
 3. Explore!
 
 ## Notes
-The program will cache sentence embeddings for all sentences in an English-written program in JSON files within `cache`. Each sentence has four keys, one for the sentence and three for the `x`, `y`, `z` coordinates for the sentence’s respective vector. This allows for easy checking with `pandas.read_json(…)` The program will repack the latter three columns when displaying vectors.
+The program will cache sentence embeddings in JSON files. Each sentence has four keys, one for the sentence and three for the `x`, `y`, `z` coordinates for the sentence’s respective vector. This allows for easy checking with `pandas.read_json(…)` The program will repack the latter three columns when displaying vectors.
 
 ## Example
 ![example](https://git.sr.ht/~srhm/feature-space-tools/blob/master/example.png)
