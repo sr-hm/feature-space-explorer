@@ -2,8 +2,8 @@
 For now, a feature space explorer written in Python using `transformers` and `matplotlib`. Allows you to browse embeddings in a 3D scatterplot. You can zoom in and out, dump values to a `pandas`-compatible format, &c.
 
 ## Usage
-1. Edit `src/main.py` to pick preferred Transformer model (e.g., `gpt2`, `bert-base-uncased`) and `device` (e.g., `cpu`)
-2. Pick 2+ ascii documents to compare. Run `python src/main.py $text1 $text2 $text3…`
+1. Check through `python src/main.py --help` to learn about available options.
+2. Pick 2+ ascii documents to compare. Run `python src/main.py $text1 $text2 $text3…` to start.
 3. Explore!
 
 ## Notes

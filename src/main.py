@@ -1,23 +1,37 @@
 import os
-import sys
 import nltk
 import json
+import argparse
 import numpy as np
 from itertools import cycle
 import matplotlib.pyplot as plt
 from transformers import pipeline
 from sklearn.decomposition import PCA
 
-pca = PCA(3)
-p = pipeline("feature-extraction", "gpt2", device=0, truncation=True) # edit model and device
-colors = cycle('bgrcmk')
-filenames = []
 
-try:
-    strip = nltk.data.load('tokenizers/punkt/english.pickle')
-except:
-    nltk.download('punkt')
-    strip = nltk.data.load('tokenizers/punkt/english.pickle')
+def get_args():
+    parser = argparse.ArgumentParser(description="Generate sentence" +
+                                     "embeddings" +
+                                     "for a set of texts and plot them in 3D.")
+    parser.add_argument("-m", "--model",
+                        help="a valid Hugging Face model",
+                        default="gpt2")
+    parser.add_argument("-d", "--device",
+                        type=int,
+                        help="CUDA device ordinal, e.g. 0 or 1",
+                        default=-1)
+    parser.add_argument("-g", "--group",
+                        type=int,
+                        help="group sentences in n bins, defaults to 1",
+                        default="1")
+    parser.add_argument("-r", "--regenerate",
+                        type=bool,
+                        help="regenerate cache (e.g., if `group` changes)",
+                        default=False)
+    parser.add_argument("texts",
+                        nargs="*",
+                        help="filenames separated by spaces")
+    return parser.parse_args()
 
 
 def get_vec(s):
@@ -26,7 +40,7 @@ def get_vec(s):
 
 
 def reduce_dims(b):
-    """Reduce all dimensions down to n dimensions with PCA."""
+    """Reduce all vectors down to n dimensions with PCA."""
     v = pca.fit_transform([b[x]["v"] for x in b.keys()])
     for y, s in enumerate(b.keys()):
         b[s]["x"] = float(v[y][0])
@@ -36,40 +50,61 @@ def reduce_dims(b):
     return b
 
 
-def load_works():
-    """Load books, from cache if possible."""
+def load_works(files):
+    """Load texts, from cache if possible."""
     works = []
-    for i in sys.argv[1:]:
+    print(files)
+    for i in files:
         filenames.append(i)
-        if f"{i}.json" in os.listdir("."):
+        if not args.regenerate and f"{i}.json" in os.listdir("."):
+            print(f"Loading {i} from cache")
             works.append(json.load(open(f"{i}.json", "r")))
         else:
+            print(f"Generating cache for {i}")
             with open(f"{i}", "r") as f:
                 s = strip.tokenize(" ".join(f.readlines()))
-                # s = [" ".join(s[y:y+5]) for y in range(0, len(s), 5)]
+                s = [" ".join(s[y:y+args.group]) for y in range(0,
+                                                                len(s),
+                                                                args.group)]
                 b = {y: {"s": x, "v": get_vec(x)} for y, x in enumerate(s)}
                 b = reduce_dims(b)
                 works.append(b)
                 json.dump(b, open(f"{i}.json", "w"))
+    print(len(works))
     return works
 
 
-data = load_works()
-vectors = []
+if __name__ == "__main__":
+    # load requisite objects
+    args = get_args()
+    pca = PCA(3)
+    p = pipeline("feature-extraction",
+                 args.model,
+                 device=args.device,
+                 truncation=True)
+    colors = cycle('bgrcmk')
+    filenames = []
+    try:
+        strip = nltk.data.load('tokenizers/punkt/english.pickle')
+    except LookupError:
+        nltk.download('punkt')
+        strip = nltk.data.load('tokenizers/punkt/english.pickle')
 
-for work in data: # pack together vectors
-    vectors.append([[work[x]["x"],
-                     work[x]["y"],
-                     work[x]["z"]] for x in work.keys()])
+    # load texts and pack together vectors
+    data = load_works(args.texts)
+    vectors = []
+    for work in data:
+        vectors.append([[work[x]["x"],
+                         work[x]["y"],
+                         work[x]["z"]] for x in work.keys()])
 
-fig = plt.figure(figsize=(12, 12))
-ax = plt.axes(projection="3d")
-
-for i, work in enumerate(vectors): # unpack vectors and display
-    x = [x[0] for x in work] 
-    y = [x[1] for x in work]
-    z = [x[2] for x in work]
-    ax.scatter3D(x, y, z, color=next(colors), label=filenames[i])
-
-plt.legend()
-plt.show()
+    # display vectors
+    fig = plt.figure(figsize=(12, 12))
+    ax = plt.axes(projection="3d")
+    for i, work in enumerate(vectors):  # unpack vectors and display
+        x = [x[0] for x in work]
+        y = [x[1] for x in work]
+        z = [x[2] for x in work]
+        ax.scatter3D(x, y, z, color=next(colors), label=filenames[i])
+    plt.legend()
+    plt.show()
