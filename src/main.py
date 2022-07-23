@@ -57,6 +57,7 @@ def reduce_dims(b):
 
 
 def load_model():
+    """Download and load model from Hugging Face"""
     p = pipeline("feature-extraction",
                  args.model,
                  device=args.device,
@@ -67,7 +68,6 @@ def load_model():
 def load_works(files, p):
     """Load texts, from cache if possible."""
     works = []
-    print(files)
     for i in files:
         filenames.append(i)
         if not args.regenerate and f"{i}.json" in os.listdir("."):
