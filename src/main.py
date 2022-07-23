@@ -40,7 +40,7 @@ def get_args():
     return parser.parse_args()
 
 
-def get_vec(s):
+def get_vec(s, p):
     """Average hidden states into single n-dimensional vector."""
     return np.mean(p(s)[0], axis=0)
 
@@ -56,7 +56,15 @@ def reduce_dims(b):
     return b
 
 
-def load_works(files):
+def load_model():
+    p = pipeline("feature-extraction",
+                 args.model,
+                 device=args.device,
+                 truncation=True)
+    return p
+
+
+def load_works(files, p):
     """Load texts, from cache if possible."""
     works = []
     print(files)
@@ -66,13 +74,15 @@ def load_works(files):
             print(f"Loading {i} from cache")
             works.append(json.load(open(f"{i}.json", "r")))
         else:
+            if not p:
+                p = load_model()
             print(f"Generating cache for {i}")
             with open(f"{i}", "r") as f:
                 s = strip.tokenize(" ".join(f.readlines()))
                 s = [" ".join(s[y:y+args.group]) for y in range(0,
                                                                 len(s),
                                                                 args.group)]
-                b = {y: {"s": x, "v": get_vec(x)} for y, x in enumerate(s)}
+                b = {y: {"s": x, "v": get_vec(x, p)} for y, x in enumerate(s)}
                 b = reduce_dims(b)
                 works.append(b)
                 json.dump(b, open(f"{i}.json", "w"))
@@ -83,10 +93,7 @@ if __name__ == "__main__":
     # load requisite objects
     args = get_args()
     pca = PCA(3)
-    p = pipeline("feature-extraction",
-                 args.model,
-                 device=args.device,
-                 truncation=True)
+    p = False
     colors = cycle([[1, 0, 0],
                     [0, 1, 0],
                     [0, 0, 1],
@@ -101,7 +108,7 @@ if __name__ == "__main__":
         strip = nltk.data.load('tokenizers/punkt/english.pickle')
 
     # load texts and pack together vectors
-    data = load_works(args.texts)
+    data = load_works(args.texts, p)
     vectors = []
     for work in data:
         vectors.append([[work[x]["x"],
