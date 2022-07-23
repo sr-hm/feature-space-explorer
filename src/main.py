@@ -1,5 +1,6 @@
 import os
 import nltk
+import tqdm
 import json
 import argparse
 import numpy as np
@@ -82,7 +83,7 @@ def load_works(files, p):
                 s = [" ".join(s[y:y+args.group]) for y in range(0,
                                                                 len(s),
                                                                 args.group)]
-                b = {y: {"s": x, "v": get_vec(x, p)} for y, x in enumerate(s)}
+                b = {y: {"s": x, "v": get_vec(x, p)} for y, x in enumerate(tqdm.tqdm(s))}
                 b = reduce_dims(b)
                 works.append(b)
                 json.dump(b, open(f"{i}.json", "w"))
