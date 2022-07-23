@@ -10,24 +10,30 @@ from sklearn.decomposition import PCA
 
 
 def get_args():
+    """Return arguments."""
     parser = argparse.ArgumentParser(description="Generate sentence" +
-                                     "embeddings" +
+                                     " embeddings" +
                                      "for a set of texts and plot them in 3D.")
     parser.add_argument("-m", "--model",
-                        help="a valid Hugging Face model",
+                        help="valid Hugging Face model",
                         default="gpt2")
     parser.add_argument("-d", "--device",
                         type=int,
                         help="CUDA device ordinal, e.g. 0 or 1",
                         default=-1)
+    parser.add_argument("-c", "--context",
+                        help="generate sentence embeddings with prior context",
+                        action="store_true")
+    parser.add_argument("-o", "--opacity",
+                        help="display embeddings with opacity per chronology",
+                        action="store_true")
     parser.add_argument("-g", "--group",
                         type=int,
                         help="group sentences in n bins, defaults to 1",
                         default="1")
     parser.add_argument("-r", "--regenerate",
-                        type=bool,
-                        help="regenerate cache (e.g., if `group` changes)",
-                        default=False)
+                        help="regenerate cache (use if `group` changes)",
+                        action="store_true")
     parser.add_argument("texts",
                         nargs="*",
                         help="filenames separated by spaces")
@@ -70,7 +76,6 @@ def load_works(files):
                 b = reduce_dims(b)
                 works.append(b)
                 json.dump(b, open(f"{i}.json", "w"))
-    print(len(works))
     return works
 
 
@@ -82,7 +87,12 @@ if __name__ == "__main__":
                  args.model,
                  device=args.device,
                  truncation=True)
-    colors = cycle('bgrcmk')
+    colors = cycle([[1, 0, 0],
+                    [0, 1, 0],
+                    [0, 0, 1],
+                    [0.5, 0.5, 0],
+                    [0, 0.5, 0.5],
+                    [0.5, 0, 0.5]])
     filenames = []
     try:
         strip = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -102,9 +112,16 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=(12, 12))
     ax = plt.axes(projection="3d")
     for i, work in enumerate(vectors):  # unpack vectors and display
+        color = next(colors)
+        if args.opacity:
+            color = [color + [x/len(work)] for x in range(len(work))]
+        else:
+            color = [color for x in range(len(work))]
         x = [x[0] for x in work]
         y = [x[1] for x in work]
         z = [x[2] for x in work]
-        ax.scatter3D(x, y, z, color=next(colors), label=filenames[i])
+        ax.scatter3D(x, y, z,
+                     c=color,
+                     label=filenames[i])
     plt.legend()
     plt.show()
